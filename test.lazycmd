@@ -1,0 +1,13 @@
+tower test1 {-2, -1, 0}
+--
+say hey im a testy boy
+execute as @a[distance=..5] run execute at @s run tp @a[distance=..5] ~ ~5 ~
+    title @a title "yooo"
+    say whats up logang
+--
+
+tower test2
+--
+summon lightning_bolt
+say aah!!!
+--
