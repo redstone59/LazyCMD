@@ -1,13 +1,20 @@
-tower test1 {-2, -1, 0}
+macro test_macro (a, b, c)
 --
-say hey im a testy boy
-execute as @a[distance=..5] run execute at @s run tp @a[distance=..5] ~ ~5 ~
-    title @a title "yooo"
-    say whats up logang
+say a b a c a
+    title @a actionbar "a"
 --
 
-tower test2
+macro new_macro (player)
 --
-summon lightning_bolt
-say aah!!!
+execute at player run summon lightning_bolt ~ ~ ~
+    msg player haha owned libbie
+--
+
+tower dreaming_space_rng {0, -1, 2}
+--
+scoreboard players operation random actualgame = @r rng
+scoreboard players operation random actualgame %= 9 constants
+test_macro(1, times, equals)
+new_macro(Dreaming95)
+test_macro(2, 4, 6)
 --

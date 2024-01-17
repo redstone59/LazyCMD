@@ -1,3 +1,8 @@
+import regex as re
+
+class IncompleteMacroError(Exception):
+    pass
+
 class CommandBlockMinecart:
     def __init__(self, command: str, passenger = None):        
         if type(command) == list:
@@ -81,6 +86,42 @@ class Command:
         self.command = command
         self.conditional = conditional
         self.comment = comment
+
+class Macro:
+    def __init__(self, name: str, argument_names: list | None, contents: str):
+        self.name = name
+        self.argument_names = argument_names
+        self.contents = contents
+    
+    def line_is_macro(self, line: str):
+        return line.strip().startswith(self.name)
+    
+    def substitute(self, line: str):
+        if not self.line_is_macro(line):
+            return line
+        
+        if self.argument_names != None:
+            arguments = re.findall(r"\(.*\)", line)
+            arguments = re.findall(r"(?<=[\(,])[^\s]*?[^,]+(?=[,\)])", arguments[0])
+            
+            for i in range(len(arguments)):
+                arguments[i] = arguments[i].strip()
+            
+            print(arguments)
+            
+            if len(arguments) != len(self.argument_names): 
+                raise IncompleteMacroError(f"Missing argument for macro {self.name} ({len(arguments)} args instead of {len(self.argument_names)})")
+            
+            substitute_dict = dict(zip(self.argument_names, arguments))
+            
+            new_line = "\n".join(self.contents)
+            
+            for key in substitute_dict:
+                substitute = substitute_dict[key].replace('(', '')
+                new_line = re.sub(rf"(?<!\w)(?<=[^@]){key}(?!\w)", substitute, new_line)
+            
+            return new_line.splitlines()
+                
 
 class Sign:
     def __init__(self, text: str, facing = "north"):
