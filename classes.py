@@ -1,5 +1,24 @@
 import regex as re
 
+COMMANDS = [
+      "advancement",     "attribute",    "bossbar",
+            "clone",          "data",   "datapack",
+  "defaultgamemode",    "difficulty",     "effect",
+          "enchant",       "execute", "experience",
+             "fill",      "function",   "gamemode",
+         "gamerule",          "give",       "help",
+             "kick",          "kill",       "list",
+           "locate",      "particle",     "reload",
+              "say",    "scoreboard",       "seed",
+         "setblock", "setworldspawn", "spawnpoint",
+    "spreadplayers",     "stopsound",     "summon",
+              "tag",          "team",    "teammsg",
+         "teleport",          "tell",    "tellraw",
+             "time",         "title",         "tp",
+          "trigger",             "w",    "weather",
+      "worldborder",            "xp"
+]
+
 class IncompleteMacroError(Exception):
     pass
 
@@ -89,6 +108,10 @@ class Command:
 
 class Macro:
     def __init__(self, name: str, argument_names: list | None, contents: str):
+        for argument in argument_names:
+            if argument in COMMANDS:
+                raise IncompleteMacroError(f"Macro '{name}' contains argument name '{argument}', which is a command. Change to avoid unexpected errors.")
+        
         self.name = name
         self.argument_names = argument_names
         self.contents = contents
@@ -106,8 +129,6 @@ class Macro:
             
             for i in range(len(arguments)):
                 arguments[i] = arguments[i].strip()
-            
-            print(arguments)
             
             if len(arguments) != len(self.argument_names): 
                 raise IncompleteMacroError(f"Missing argument for macro {self.name} ({len(arguments)} args instead of {len(self.argument_names)})")
