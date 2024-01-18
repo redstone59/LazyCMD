@@ -1,54 +1,20 @@
 from arguments import *
 from classes import *
 
+import preprocessing
 import regex as re
 
-program_file = getattr(args, "in").read()
-
-defined_macros = re.findall(r"macro .*\n-+\n[\s\S]*?\n-+", program_file)
-all_macros = []
-
-for macro in defined_macros:
-    program_file.replace(macro, "")
-    lines = macro.splitlines()
-    definition = lines[0][6:]
-
-    macro_arguments = re.findall(r"\(.*\)", definition)
-    if macro_arguments != []:
-        macro_arguments = re.findall(r"\w+(?=[,\)])", macro_arguments[0])
+def display_summon_command(name: str, command: str) -> None:
+    command_length = len(command)
+    
+    if command_length > 3500:
+        print(f"{name} is too big to fit in a single command block. Split it up in the original file! ({len(command)}/3500 chars)")
     else:
-        macro_arguments = None
+        print(f"\nTower {name}:\n{command}({command_length}/3500 chars)")
     
-    macro_name = re.findall(r"\w+", definition)[0]
-    
-    all_macros += [Macro(macro_name, macro_arguments, lines[2:][:-1])]
+def find_relative_position(line: str) -> list[int]:
+    relative_pos = re.findall(r"{\s*-?\d+,\s*-?\d+,\s*-?\d+}", line) # Finds if there is a relative position argument in tower definition
 
-all_towers = re.findall(r"tower .*\n-+\n[\s\S]*?\n-+", program_file)
-
-for macro in all_macros:
-    for i in range(len(all_towers)):
-        lines = all_towers[i].splitlines()
-        substituted_lines = {}
-
-        for j in range (len(lines)):
-            macro_line = lines[j]
-            lines[j] = re.sub(r"//.*", "", lines[j]).rstrip() # Remove comment (if any)
-            
-            if macro.line_is_macro(lines[j]):
-                substituted_lines[j] = macro.substitute(lines[j])
-
-        substituted_lines = dict(sorted(substituted_lines.items(), reverse = True))
-
-        for j in substituted_lines:
-            del lines[j]
-            lines[j:j] = substituted_lines[j]
-
-        all_towers[i] = "\n".join(lines)
-
-for tower in all_towers:
-    lines = tower.splitlines()
-    relative_pos = re.findall(r"{\s*-?\d+,\s*-?\d+,\s*-?\d+}", lines[0]) # Finds if there is a relative position argument in tower definition
-    
     if relative_pos != []:
         position = []
         relative_pos = relative_pos[0][1:][:-1].split(',')
@@ -57,18 +23,14 @@ for tower in all_towers:
     else:
         position = [0, -1, -2]
     
-    print(f"Tower {lines[0][6:]}:")
-    
-    lines = lines[2:][:-1] # Remove tower name and - lines
+    return position
+
+def parse_commands(command_list: list[str]) -> list[Command]:
     commands = []
     
-    for line in lines:
+    for line in command_list:
         comment = re.findall(r"//.*", line) # Find comment in line (if any)
         line = re.sub(r"//.*", "", line).rstrip() # Remove comment (if any)
-        
-        for macro in all_macros:
-            if macro.line_is_macro(line):
-                line = macro.substitute(line)
         
         line = line.replace('"', '\\"').replace("'", "\\'") # Escape all quotes
         
@@ -81,8 +43,31 @@ for tower in all_towers:
         
         commands += [Command(line, conditional, comment)]
     
+    return commands
+    
+
+program_file = getattr(args, "in").read()
+
+defined_macros = re.findall(r"macro .*\n-+\n[\s\S]*?\n-+", program_file)
+all_macros = preprocessing.find_all_macros(defined_macros, program_file)
+
+all_towers = re.findall(r"tower .*\n-+\n[\s\S]*?\n-+", program_file)
+all_towers = preprocessing.substitute_macros(all_macros, all_towers)
+# all_towers = split_long_towers(all_towers)
+
+for tower in all_towers:
+    lines = tower.splitlines()
+    
+    position = find_relative_position(lines[0])
+    tower_name = lines[0][6:] # Removes "tower " from line, leaving tower name and relative position.
+    
+    lines = lines[2:][:-1] # Trim tower name and - lines
+    
+    commands = parse_commands(lines)
+    
     chain = CommandChain(commands, RelativeCoordinate(*position), getattr(args, "facing")).to_list()
     chain += ["kill @e[type=command_block_minecart,distance=..2]"]
+    
     tower_cart = "summon falling_block ~ ~1 ~ {Time:1,Passengers:[" + str(CommandBlockMinecart(chain)) + ']}\n'
     
-    print(tower_cart if len(tower_cart) <= 3500 else f"is too big to fit in a single command block. Split it up in the original file! ({len(tower_cart)} chars)")
+    display_summon_command(tower_name, tower_cart)
