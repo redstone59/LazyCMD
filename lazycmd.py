@@ -53,7 +53,7 @@ all_macros = preprocessing.find_all_macros(defined_macros, program_file)
 
 all_towers = re.findall(r"tower .*\n-+\n[\s\S]*?\n-+", program_file)
 all_towers = preprocessing.substitute_macros(all_macros, all_towers)
-# all_towers = split_long_towers(all_towers)
+all_towers = preprocessing.split_long_towers(all_towers, getattr(args, "facing"))
 
 for tower in all_towers:
     lines = tower.splitlines()
