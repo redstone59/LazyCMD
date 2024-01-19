@@ -69,12 +69,14 @@ for tower in all_towers:
     
     position = find_relative_position(lines[0])
     tower_name = lines[0][6:] # Removes "tower " from line, leaving tower name and relative position.
+    is_continued = tower_name.endswith(" cont")
+    tower_name = tower_name.replace(" cont", "")
     
     lines = lines[2:][:-1] # Trim tower name and - lines
     
     commands = parse_commands(lines)
     
-    chain = CommandChain(commands, RelativeCoordinate(*position), getattr(args, "facing")).to_list()
+    chain = CommandChain(commands, RelativeCoordinate(*position), getattr(args, "facing"), is_continued).to_list()
     chain += ["kill @e[type=command_block_minecart,distance=..2]"]
     
     tower_cart = "summon falling_block ~ ~1 ~ {Time:1,Passengers:[" + str(CommandBlockMinecart(chain)) + ']}\n'

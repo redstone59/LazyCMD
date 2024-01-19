@@ -53,11 +53,12 @@ class RelativeCoordinate:
         return f"~{self.x} ~{self.y} ~{self.z}".replace("~0", "~")
 
 class CommandChain:
-    def __init__(self, commands: list, origin = RelativeCoordinate(0, 0, 0), facing = "north"):
+    def __init__(self, commands: list, origin = RelativeCoordinate(0, 0, 0), facing = "north", continued = False):
         self.commands = commands
         self.origin = origin
         self.facing = facing
         self.increment = 0
+        self.continued = continued
     
     def to_list(self):
         resultant = []
@@ -66,7 +67,7 @@ class CommandChain:
         for i in range(len(self.commands)):
             command = f"setblock {block_coordinate} "
 
-            command += "command_block" if i == 0 else "chain_command_block"
+            command += "command_block" if i == 0 and not self.continued else "chain_command_block"
             
             block_data = []
             if self.facing != "north": block_data += [f"facing={self.facing}"]
@@ -78,7 +79,7 @@ class CommandChain:
             command += self.commands[i].command
             command += "'"
             
-            if i > 0: command += ",auto:1b"
+            if i > 0 or self.continued: command += ",auto:1b"
             
             command += "}"
             
