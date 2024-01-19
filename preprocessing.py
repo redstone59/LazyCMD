@@ -76,39 +76,46 @@ def split_long_towers(tower_list: list[str], facing: str) -> list[list[str]]:
         
         if approximate_command_length < 3400: # better safe than sorry amirite hehehehhe
             split_towers += [tower]
+            continue
 
-        else: 
-            split_tower = []
-            required_splits = approximate_command_length // 3400
-            split_list_length = len(lines) // (required_splits + 1)
-            
-            for i in range (required_splits):
-                split_tower += [lines[:split_list_length]]
-                del lines[:split_list_length]
-            
-            split_tower += [lines]
+        split_tower = []
+        required_splits = approximate_command_length // 3400
+        split_list_length = len(lines) // (required_splits + 1)
+        
+        for i in range (required_splits):
+            split_tower += [lines[:split_list_length]]
+            del lines[:split_list_length]
+        
+        split_tower += [lines]
 
-            for i in range(len(split_tower)):
-                split_tower[i].insert(0, f"tower {tower_name}_{i + 1} {{{', '.join(map(str, starting_position))}}}")
-                split_tower[i].insert(1, "--")
-                split_tower[i].append("--")
+        match facing:
+            case "north":
+                index = 2
+                direction = -1
+            case "south":
+                index = 2
+                direction = 1
+            case "west":
+                index = 0
+                direction = -1
+            case "east":
+                index = 0
+                direction = 1
+            case "down":
+                index = 1
+                direction = -1
+            case "up":
+                index = 1
+                direction = 1
                 
-                match facing:
-                    case "north":
-                        starting_position[2] -= split_list_length
-                    case "south":
-                        starting_position[2] += split_list_length
-                    case "west":
-                        starting_position[0] -= split_list_length
-                    case "east":
-                        starting_position[0] += split_list_length
-                    case "down":
-                        starting_position[1] -= split_list_length
-                    case "up":
-                        starting_position[1] += split_list_length
+        for i in range(len(split_tower)):
+            split_tower[i].insert(0, f"tower {tower_name}_{i + 1} {{{', '.join(map(str, starting_position))}}}")
+            split_tower[i].insert(1, "--")
+            split_tower[i].append("--")
             
-            for x in split_tower:
-                split_towers += ['\n'.join(x)]
+            starting_position[index] += split_list_length * direction
+            
+        for x in split_tower:
+            split_towers += ['\n'.join(x)]
         
     return split_towers
-        
