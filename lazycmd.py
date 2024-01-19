@@ -11,7 +11,15 @@ def display_summon_command(name: str, command: str) -> None:
         print(f"{name} is too big to fit in a single command block. Split it up in the original file! ({len(command)}/3500 chars)")
     else:
         print(f"\nTower {name}:\n{command}({command_length}/3500 chars)")
+
+def write_summon_command(file, name: str, command: str) -> None:
+    command_length = len(command)
     
+    if command_length > 3500:
+        file.write(f"{name} is too big to fit in a single command block. Split it up in the original file! ({len(command)}/3500 chars)\n")
+    else:
+        file.write(f"\nTower {name}:\n{command}({command_length}/3500 chars)\n")
+   
 def find_relative_position(line: str) -> list[int]:
     relative_pos = re.findall(r"{\s*-?\d+,\s*-?\d+,\s*-?\d+}", line) # Finds if there is a relative position argument in tower definition
 
@@ -47,6 +55,7 @@ def parse_commands(command_list: list[str]) -> list[Command]:
     
 
 program_file = getattr(args, "in").read()
+output_file = getattr(args, "out")
 
 defined_macros = re.findall(r"macro .*\n-+\n[\s\S]*?\n-+", program_file)
 all_macros = preprocessing.find_all_macros(defined_macros, program_file)
@@ -70,4 +79,7 @@ for tower in all_towers:
     
     tower_cart = "summon falling_block ~ ~1 ~ {Time:1,Passengers:[" + str(CommandBlockMinecart(chain)) + ']}\n'
     
-    display_summon_command(tower_name, tower_cart)
+    if output_file == None:
+        display_summon_command(tower_name, tower_cart)
+    else:
+        write_summon_command(output_file, tower_name, tower_cart)
