@@ -42,12 +42,14 @@ A complete tower would look something like this.
 ```
 tower useless_tower {0, -1, 2} // Definition
 --
-command 1                      // Normal command block, needs redstone
+command 1                      // Impulse command block, needs redstone
 command 2                      // Chain command block, always active
     command 3                  // Chain command block, always active, conditional
 ...
 --
 ```
+
+If the definition of a tower ends with ` cont`, however, the first command block will not be an impulse command block, and instead a chain command block. This is useful if the tower to be placed is being added onto an existing tower.
 
 ## Macros
 
