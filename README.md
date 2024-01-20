@@ -93,6 +93,22 @@ say has just gotten
 --
 ```
 
+## Including other files
+
+Much like other coding languages, the code in other files can be used if the file is included. In LazyCMD, including another file means that all the macros defined within that file can be used. Towers do not get imported.
+
+The syntax for including files is similar to C. To include a file from the LazyCMD standard library (located in the `include` folder in the same directory that contains `lazycmd.py`), the filename must be surrounded in angle brackets.
+
+```
+include <lorem.lazyh> // Imports macros from [lazycmd dir]/include/random.lazyh
+```
+
+To include a file in the same directory as the file to be compiled, the filename is surrounded by quotes (single or double)
+
+```
+include "ipsum.lazyh" // Imports macros from ./ipsum.lazyh
+```
+
 # Compiling
 
 Compiling a `.lazycmd` file is done on the terminal, and is done by the `lazycmd.py` file. The arguments for the compiler are as follows:
