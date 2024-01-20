@@ -1,0 +1,14 @@
+macro random_first_run
+--
+scoreboard objectives add rng minecraft.custom:minecraft.play_time      // This must be run at least once per world.
+scoreboard objectives add constants dummy                               // Could make a "setup" tower for every first_run macro
+scoreboard players set 1103515245 constants 1103515245                  // required.
+--
+
+macro random_int (max, board_name)
+--
+scoreboard players operation random board_name = @r rng                 // Uses a Linear Congruential Generator
+scoreboard players operation random board_name *= 1103515245 constants  // https://en.wikipedia.org/wiki/Linear_congruential_generator
+scoreboard players add random board_name 12345                          // Values for `a` and `c` stolen from glibc
+scoreboard players operation random board_name %= max constants         // Seed is taken from a random player's total play time (in game ticks)
+--
