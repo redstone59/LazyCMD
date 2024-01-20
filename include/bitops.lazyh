@@ -1,0 +1,37 @@
+macro bitops_first_run
+--
+scoreboard objectives add bitops dummy      // This must be run once per world
+scoreboard objectives add constants dummy   // Could make a "setup" tower for every first_run macro
+scoreboard players set 2 constants 2        // required
+--
+
+macro not(name, board)
+--
+scoreboard players operation result bitops = name board
+scoreboard players add result bitops 1
+scoreboard players operation result bitops %= 2 constants
+--
+
+macro and(name_1, board_1, name_2, board_2)
+--
+scoreboard players operation result bitops = name_1 board_1
+scoreboard players operation result bitops += name_2 board_2
+execute if score result bitops matches ..1 run scoreboard players set result bitops 0
+execute if score result bitops matches 2.. run scoreboard players set result bitops 1
+--
+
+macro or(name_1, board_1, name_2, board_2)
+--
+scoreboard players operation result bitops = name_1 board_1
+scoreboard players operation result bitops += name_2 board_2
+execute if score result bitops matches 0 run scoreboard players set result bitops 0
+execute unless score result bitops matches 0 run scoreboard players set result bitops 1
+--
+
+macro xor(name_1, board_1, name_2, board_2)
+--
+scoreboard players operation result bitops = name_1 board_1
+scoreboard players operation result bitops += name_2 board_2
+execute unless score result bitops matches 1 run scoreboard players set result bitops 0
+execute if score result bitops matches 1 run scoreboard players set result bitops 1
+--
