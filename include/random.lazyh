@@ -3,13 +3,21 @@ macro random_first_run
 scoreboard objectives add rng minecraft.custom:minecraft.play_time      // This must be run at least once per world.
 scoreboard objectives add constants dummy                               // Could make a "setup" tower for every first_run macro
 scoreboard players set 1103515245 constants 1103515245                  // required.
+scoreboard players set -1 constants -1
+scoreboard players set state rng 1
 --
 
-macro random_int (max, key, board_name)                                 // IMPORTANT: `max` must be in constants. If not, run "scoreboard players set max constants max"
+macro randomise_state
 --
-scoreboard players operation key board_name = @r rng                    // Uses a Linear Congruential Generator
-scoreboard players operation key board_name *= 1103515245 constants     // https://en.wikipedia.org/wiki/Linear_congruential_generator
-scoreboard players add key board_name 12345                             // Values for `a` and `c` stolen from glibc
+scoreboard players operation state rng = @r rng
+--
+
+macro random_int (max, key, board_name)   // IMPORTANT: `max` must be in constants. If not, run "scoreboard players set max constants max"
+--
+scoreboard players operation state rng *= 1103515245 constants          // Uses a Linear Congruential Generator
+scoreboard players add state rng 12345                                  // https://en.wikipedia.org/wiki/Linear_congruential_generator
+execute if score state rng matches ..0 run scoreboard players operation state rng *= -1 constants
+scoreboard players operation key board_name = state rng                 // Values stolen from glibc (the line above is equivalent to the modulus)
 scoreboard players operation key board_name %= max constants            // Seed is taken from a random player's total play time (in game ticks)
 --
 
@@ -17,9 +25,10 @@ macro random_range (min, max, key, board_name)
 --
 scoreboard players set range_length rng max                             // Same as random_int(max - min, board_name) + min
 scoreboard players remove range_length rng min                          // If you are a pedant about speed, pre-calculate max - min and
-scoreboard players operation key board_name = @r rng                    // call random_int instead. Saves 2 game ticks.
-scoreboard players operation key board_name *= 1103515245 constants
-scoreboard players add key board_name 12345
+scoreboard players operation state rng *= 1103515245 constants          // call random_int instead. Saves 2 game ticks.
+scoreboard players add state rng 12345
+execute if score state rng matches ..0 run scoreboard players operation state rng *= -1 constants
+scoreboard players operation key board_name = state rng
 scoreboard players operation key board_name %= range_length rng
 scoreboard players add key board_name min
 --
