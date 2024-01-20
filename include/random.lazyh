@@ -5,10 +5,21 @@ scoreboard objectives add constants dummy                               // Could
 scoreboard players set 1103515245 constants 1103515245                  // required.
 --
 
-macro random_int (max, board_name)
+macro random_int (max, board_name)                                      // IMPORTANT: `max` must be in constants. If not, run "scoreboard players set max constants max"
 --
 scoreboard players operation random board_name = @r rng                 // Uses a Linear Congruential Generator
 scoreboard players operation random board_name *= 1103515245 constants  // https://en.wikipedia.org/wiki/Linear_congruential_generator
 scoreboard players add random board_name 12345                          // Values for `a` and `c` stolen from glibc
 scoreboard players operation random board_name %= max constants         // Seed is taken from a random player's total play time (in game ticks)
+--
+
+macro random_range (min, max, board_name)
+--
+scoreboard players set range_length rng max                             // Same as random_int(max - min, board_name) + min
+scoreboard players remove range_length rng min                          // If you are a pedant about speed, pre-calculate max - min and
+scoreboard players operation random board_name = @r rng                 // call random_int instead. Saves 2 game ticks.
+scoreboard players operation random board_name *= 1103515245 constants
+scoreboard players add random board_name 12345
+scoreboard players operation random board_name %= range_length rng
+scoreboard players add random board_name min
 --
