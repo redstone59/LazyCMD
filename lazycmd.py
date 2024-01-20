@@ -3,6 +3,10 @@ from classes import *
 
 import preprocessing
 import regex as re
+import os
+
+LAZYCMD_DIR = os.path.split(__file__)[0]
+FILE_DIR = os.path.split(getattr(args, "in").name)[0]
 
 def display_summon_command(name: str, command: str) -> None:
     command_length = len(command)
@@ -59,6 +63,26 @@ output_file = getattr(args, "out")
 
 defined_macros = re.findall(r"macro .*\n-+\n[\s\S]*?\n-+", program_file)
 all_macros = preprocessing.find_all_macros(defined_macros, program_file)
+
+included_files = re.findall(r"(?<!\w[ \t]*)include [<'\"]\w+\.\w+[>'\"]\n", program_file)
+
+for filename in included_files:
+    filename = filename.split()[1]
+    check_char = filename[0]
+    filename = filename[1:][:-1] # Trim start and end characters
+    
+    if check_char == "<":
+        file = open(os.path.join(LAZYCMD_DIR, "include", filename))
+    elif check_char in ['"', "'"]:
+        file = open(os.path.join(FILE_DIR, filename))
+    else:
+        raise IncorrectIncludeError(f"'include {filename}' formatted incorrectly. Surround file in angle brackets or quotes.")
+    
+    include_file = file.read()
+    file.close()
+    
+    defined_macros = re.findall(r"macro .*\n-+\n[\s\S]*?\n-+", include_file)
+    all_macros += preprocessing.find_all_macros(defined_macros, include_file)
 
 all_towers = re.findall(r"tower .*\n-+\n[\s\S]*?\n-+", program_file)
 all_towers = preprocessing.substitute_macros(all_macros, all_towers)

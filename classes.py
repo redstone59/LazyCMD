@@ -22,6 +22,18 @@ COMMANDS = [
 class IncompleteMacroError(Exception):
     pass
 
+class IncorrectIncludeError(Exception):
+    pass
+
+class RelativeCoordinate:
+    def __init__(self, x: int | float, y: int | float, z: int | float):
+        self.x = x
+        self.y = y
+        self.z = z
+    
+    def __str__(self):
+        return f"~{self.x} ~{self.y} ~{self.z}".replace("~0", "~")
+    
 class CommandBlockMinecart:
     def __init__(self, command: str, passenger = None):        
         if type(command) == list:
@@ -43,17 +55,14 @@ class CommandBlockMinecart:
         resultant += '}'
         return resultant
 
-class RelativeCoordinate:
-    def __init__(self, x: float, y: float, z: float):
-        self.x = x
-        self.y = y
-        self.z = z
-    
-    def __str__(self):
-        return f"~{self.x} ~{self.y} ~{self.z}".replace("~0", "~")
+class Command:
+    def __init__(self, command: str, conditional = False, comment = ""):
+        self.command = command
+        self.conditional = conditional
+        self.comment = comment
 
 class CommandChain:
-    def __init__(self, commands: list, origin = RelativeCoordinate(0, 0, 0), facing = "north", continued = False):
+    def __init__(self, commands: list[Command], origin = RelativeCoordinate(0, 0, 0), facing = "north", continued = False):
         self.commands = commands
         self.origin = origin
         self.facing = facing
@@ -101,17 +110,12 @@ class CommandChain:
                 
         return resultant
 
-class Command:
-    def __init__(self, command: str, conditional = False, comment = ""):
-        self.command = command
-        self.conditional = conditional
-        self.comment = comment
-
 class Macro:
     def __init__(self, name: str, argument_names: list | None, contents: str):
-        for argument in argument_names:
-            if argument in COMMANDS:
-                raise IncompleteMacroError(f"Macro '{name}' contains argument name '{argument}', which is a command. Change to avoid unexpected errors.")
+        if argument_names != None:
+            for argument in argument_names:
+                if argument in COMMANDS:
+                    raise IncompleteMacroError(f"Macro '{name}' contains argument name '{argument}', which is a command. Change to avoid unexpected errors.")
         
         self.name = name
         self.argument_names = argument_names
@@ -143,7 +147,8 @@ class Macro:
                 new_line = re.sub(rf"(?<!\w)(?<=[^@]){key}(?!\w)", substitute, new_line)
             
             return new_line.splitlines()
-                
+
+        return self.contents
 
 class Sign:
     def __init__(self, text: str, facing = "north"):
