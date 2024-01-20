@@ -5,6 +5,22 @@ It currently compiles to `summon` commands with command block minecart towers. T
 
 This may become the intermediate language for [mCmd](https://github.com/redstone59/mCmd), another project which aims to create a higher-level programming language that can compile into command blocks.
 
+# Prerequisites
+
+Before running LazyCMD, install the `regex` module by running `pip install regex`. This is a different module than Python's included `re` module.
+
+When including other files, be sure to run the `[name]_first_run` macro at least once per world. Another thing that is required is a dummy scoreboard named `constants`. This scoreboard is absolutely necessary for any mathematical operations that are not assignment, addition, or subtraction.
+
+```
+include <random.lazyh>                     // Included file
+
+tower setup
+--
+scoreboard objectives add constants dummy  // Create the constants scoreboard
+random_first_run                           // Initalise random.lazyh for the world
+--
+```
+
 # Grammar
 
 ## Towers
